@@ -3,32 +3,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".NameActivity">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/welcomeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/Text_View"
+        android:text="@string/Text_View2"
         android:textSize="20sp"
-        android:layout_marginTop="16dp"
-/>
-
-    <EditText
-        android:id="@+id/editText"
-        android:layout_width="match_parent"
+        android:layout_marginTop="16dp"/>
+    <Button
+        android:id="@+id/dontCallButton"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/textView"
+        android:text="@string/button_text1"
+        android:layout_below="@id/welcomeTextView"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
-        android:hint=""/>
+        />
 
     <Button
-        android:id="@+id/nextButton"
+        android:id="@+id/thankYouButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/button_text"
-        android:layout_below="@id/editText"
-        android:layout_marginTop="16dp"/>
+        android:text="@string/button_text2"
+        android:layout_below="@id/welcomeTextView"
+        android:layout_marginTop="16dp"
+        android:layout_toEndOf="@id/dontCallButton"/>
+
+
 
 </RelativeLayout>

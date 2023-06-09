@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lab4Application</string>
+    <string name="banner_text">CST2335 Labo 4</string>
+    <string name="text_hint">Écrivez ici</string>
+    <string name="switch_text">Urgente</string>
+    <string name="bt_add">Ajouter</string>
+</resources>

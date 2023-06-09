@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="app_name">Lab3Application</string>
+    <string name="Text_View">Entrez votre nom</string>
+    <string name="Text_View2">Bienvenue!</string>
+    <string name="button_text">Suivante</string>
+    <string name="button_text1">NE M\'APPELLE PAS ÇA</string>
+    <string name="button_text2">MERCI</string>
+</resources>
