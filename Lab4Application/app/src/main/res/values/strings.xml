@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Lab4Application</string>
+    <string name="banner_text">CST2335 Lab 4</string>
+    <string name="text_hint">Type Here</string>
+    <string name="switch_text">Urgent</string>
+    <string name="bt_add">Add</string>
+</resources>
