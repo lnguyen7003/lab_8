@@ -20,6 +20,7 @@ import java.net.URL;
 public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
     private ProgressBar progressBar;
+    private boolean isRunning = true; // Add the boolean flag
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +33,14 @@ public class MainActivity extends AppCompatActivity {
         new CatImages().execute();
     }
 
+    // ...
+
     private class CatImages extends AsyncTask<String, Integer, String> {
         private Bitmap currentCatImage;
 
         @Override
         protected String doInBackground(String... params) {
-            while (!isCancelled()) {
+            while (isRunning && !isCancelled()) {
                 try {
                     URL url = new URL("https://cataas.com/cat?json=true");
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -98,6 +101,12 @@ public class MainActivity extends AppCompatActivity {
                 progressBar.setProgress(values[0]);
                 imageView.setImageBitmap(currentCatImage);
             }
+        }
+
+        @Override
+        protected void onCancelled() { // Add this method to set isRunning flag to false when task is cancelled
+            super.onCancelled();
+            isRunning = false;
         }
     }
 }
