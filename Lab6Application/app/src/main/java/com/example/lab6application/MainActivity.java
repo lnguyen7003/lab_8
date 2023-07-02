@@ -1,112 +1,99 @@
 package com.example.lab6application;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    private ImageView imageView;
-    private ProgressBar progressBar;
-    private boolean isRunning = true; // Add the boolean flag
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imageView = findViewById(R.id.imageView);
-        progressBar = findViewById(R.id.progressBar);
-
-        new CatImages().execute();
+        CatImages req = new CatImages();
+        req.execute("https://cataas.com/cat?json=true");
     }
 
-    // ...
+    private class CatImages extends AsyncTask<String, Integer, Bitmap> {
 
-    private class CatImages extends AsyncTask<String, Integer, String> {
-        private Bitmap currentCatImage;
+        ImageView img = findViewById(R.id.imageView);
+        ProgressBar prg = findViewById(R.id.progressBar);
+        Bitmap bitmap;
+        ArrayList<String> allIds = new ArrayList<>();
+        public Bitmap doInBackground(String ... args) {
 
-        @Override
-        protected String doInBackground(String... params) {
-            while (isRunning && !isCancelled()) {
+            while(true) {
                 try {
-                    URL url = new URL("https://cataas.com/cat?json=true");
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("GET");
+                    URL url = new URL(args[0]);
 
-                    if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                        InputStream inputStream = connection.getInputStream();
-                        StringBuilder stringBuilder = new StringBuilder();
-                        int data;
-                        while ((data = inputStream.read()) != -1) {
-                            stringBuilder.append((char) data);
-                        }
-                        String response = stringBuilder.toString();
-                        connection.disconnect();
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
-                        String imageUrl = parseImageUrlFromJson(response);
-                        if (imageUrl != null) {
-                            currentCatImage = getBitmapFromUrl(imageUrl);
-                            publishProgress(0);
-                            Thread.sleep(3000);
+                    InputStream response = urlConnection.getInputStream();
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(response, StandardCharsets.UTF_8), 8);
+                    StringBuilder sb = new StringBuilder();
+                    String line = null;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line + "\n");
+                    }
+                    String result = sb.toString();
+
+                    JSONObject catPic = new JSONObject(result);
+
+                    String catId = catPic.getString("_id");
+                    String catURLString = catPic.getString("url");
+                    URL catURL = new URL("https://cataas.com"+catURLString);
+                    File catFile = new File(getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), catId);
+                    if (allIds.contains(catId)) {
+
+                        bitmap = BitmapFactory.decodeFile(catFile.getPath());
+                    } else {
+
+                        bitmap = BitmapFactory.decodeStream(catURL.openConnection().getInputStream());
+                        FileOutputStream outStream = new FileOutputStream(catFile);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+                        allIds.add(catId);
+                    }
+
+                    for (int i = 0; i < 100; i++) {
+                        try {
+                            publishProgress(i);
+                            Thread.sleep(20);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
-                    connection.disconnect();
-                } catch (Exception e) {
+
+                } catch(Exception e) {
                     e.printStackTrace();
                 }
             }
-            return null;
         }
-
-        private String parseImageUrlFromJson(String json) {
-            try {
-                JSONObject jsonObject = new JSONObject(json);
-                return "https://cataas.com" + jsonObject.getString("url");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return null;
+        public void onProgressUpdate(Integer ... args) {
+            onPostExecute(bitmap);
+            prg.setProgress(args[0]);
         }
-
-        private Bitmap getBitmapFromUrl(String imageUrl) {
-            try {
-                URL url = new URL(imageUrl);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream inputStream = connection.getInputStream();
-                return BitmapFactory.decodeStream(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            if (currentCatImage != null) {
-                progressBar.setProgress(values[0]);
-                imageView.setImageBitmap(currentCatImage);
-            }
-        }
-
-        @Override
-        protected void onCancelled() { // Add this method to set isRunning flag to false when task is cancelled
-            super.onCancelled();
-            isRunning = false;
+        public void onPostExecute(Bitmap returned) {
+            img.setImageBitmap(returned);
         }
     }
 }
